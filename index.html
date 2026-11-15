@@ -1,4 +1,4 @@
-<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>통근버스 정류장 지도 (카카오)</title>
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>통근버스 정류장 지도 (카카오)</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=JetBrains+Mono:wght@500;700&display=swap">
 <style>
 *{box-sizing:border-box}[hidden]{display:none!important}body{margin:0}
@@ -54,7 +54,28 @@ input[type=search]{font:inherit;border:1px solid var(--line);background:var(--pa
 .pop .t{font-family:var(--mono);font-size:12px}
 .pop a{color:var(--in);margin-right:10px;font-weight:500}
 .badge{font-size:11px;color:var(--mute)}
-@media (max-width:760px){.main{grid-template-columns:1fr;grid-template-rows:55vh minmax(260px,1fr);overflow:auto}.mapw{order:-1}body{height:auto;min-height:100%}html,body{height:auto}.main{flex:none}.list{max-height:50vh}}
+.fl{display:contents}.tgl{display:none}
+@media (max-width:760px){
+html,body{height:100%;overflow:hidden}
+body{height:100dvh;padding:8px max(10px,env(safe-area-inset-right,0px)) max(8px,env(safe-area-inset-bottom,0px)) max(10px,env(safe-area-inset-left,0px));gap:8px;font-size:15px}
+h1{font-size:16px}
+.top{gap:6px 8px;align-items:center}
+.top>.grp:first-child{flex:1;min-width:0}.top>.grp:first-child .note{display:none}
+.tgl{display:inline-block;min-height:38px}
+.sbox{order:3;flex:1 0 100%}.sbox label{display:none}
+input[type=search]{width:100%;font-size:16px;min-height:40px}
+.fl{display:none;order:4;flex:1 0 100%;flex-direction:column;gap:8px;max-height:36dvh;overflow:auto}
+.top.open .fl{display:flex}
+.seg{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:2px}
+button.c{min-height:38px;white-space:nowrap;flex:none}
+.main{grid-template-columns:1fr;grid-template-rows:minmax(0,46%) minmax(0,1fr);flex:1;min-height:0;overflow:hidden}
+.mapw{order:-1}.list{max-height:none}
+.rt{padding:11px 12px}
+.legend{font-size:11px;padding:4px 7px;left:6px;bottom:6px;gap:2px 8px}
+.foot{display:none}
+.pin{width:28px;height:28px;font-size:12px}
+.pop .x{font-size:24px;top:0;right:6px}
+}
 .keybox{position:absolute;inset:0;z-index:50;background:var(--panel);display:flex;flex-direction:column;gap:10px;padding:20px;overflow:auto}
 .keybox ol{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px}.keybox code{font-family:var(--mono);font-size:12px;background:var(--bg);padding:1px 5px;border-radius:4px}
 .keybox input{width:100%;max-width:420px;font-family:var(--mono)}
@@ -66,18 +87,21 @@ input[type=search]{font:inherit;border:1px solid var(--line);background:var(--pa
 </style></head><body>
 <div class="top">
  <div class="grp"><h1>통근버스 정류장 지도</h1><span class="note">삼성SDI 기흥·삼성SDI 천안·삼성전자 천안/온양·수원 노선 중 동탄·망포·영통·수원·광교·수지·병점 경유 노선</span></div>
+ <button class="c tgl" id="tgl" type="button" aria-expanded="false">필터 ▾</button>
+<div class="fl" id="fl">
  <div class="grp"><span class="l">구분</span><div class="seg" id="fdir"></div></div>
  <div class="grp"><span class="l">사업장</span><div class="seg" id="fsite"></div></div>
  <div class="grp" id="gin"><span class="l">출근 · 노선 출발 시간대</span><div class="seg" id="fin"></div></div>
  <div class="grp" id="gout"><span class="l">퇴근 · 사업장 출발 시간대</span><div class="seg" id="fout"></div></div>
- <div class="grp"><label for="q">노선·정류장 검색</label><input id="q" type="search" placeholder="예: 망포, 반도유보라"></div>
+ </div>
+ <div class="grp sbox"><label for="q">노선·정류장 검색</label><input id="q" type="search" placeholder="예: 망포, 반도유보라"></div>
 </div>
 <div class="main">
  <div class="side"><div class="sh" id="cnt"></div><div class="list" id="list"></div></div>
  <div class="mapw"><div id="map"></div><div class="keybox" id="keybox"><h2 style="margin:0;font-size:16px">카카오 지도 JavaScript 키 입력</h2><ol><li><a href="https://developers.kakao.com" target="_blank" rel="noopener">developers.kakao.com</a>에서 앱 생성 → 앱 키의 <b>JavaScript 키</b> 복사</li><li>플랫폼 → Web → 사이트 도메인에 <code>http://localhost:8000</code> 등록</li><li>카카오맵 사용 설정을 켜고, 이 파일이 있는 폴더에서 <code>python3 -m http.server 8000</code> 실행 후 <code>http://localhost:8000/kakao_map.html</code> 접속</li></ol><input id="key" type="text" placeholder="JavaScript 키" autocomplete="off"><div><button class="c" id="keygo" type="button">지도 불러오기</button></div><div class="note" id="keymsg">키는 이 브라우저(localStorage)에만 저장됩니다.</div></div>
   <div class="legend"><span><i class="lg-in"></i>출근 승차 정류장</span><span><i class="lg-out"></i>퇴근 하차 정류장</span><span><i class="lm" style="display:inline-block"></i>기준 역·장소</span></div></div>
 </div>
-<p class="note" style="margin:0">핀 위치는 정류장 이름에서 추정한 대략 위치입니다(수백 m 오차 가능, 흐린 핀은 동네 단위 추정). 정확한 위치는 팝업의 네이버지도·구글지도 링크로 확인하세요. 원본 시트에 좌표가 없습니다.</p>
+<p class="note foot" style="margin:0">핀 위치는 셔틀 앱의 실제 정류장 좌표입니다. 정류장별 시간은 일부 출근 노선에만 있고, 나머지는 노선 출발(퇴근은 사업장 출발) 시간만 표시됩니다. 핀을 누르면 네이버지도·구글지도 링크가 나옵니다.</p>
 
 <script>
 // ▼▼ 여기 따옴표 안에 카카오 JavaScript 키를 붙여넣으면 입력 화면 없이 바로 지도가 열립니다 ▼▼
@@ -94,6 +118,8 @@ function syncSeg(){document.querySelectorAll('.seg button').forEach(b=>b.setAttr
 seg($('fdir'),[['both','둘 다'],['in','출근만'],['out','퇴근만']],'dir',{in:'in',out:'out'});
 seg($('fsite'),[['all','전체'],['기흥','기흥'],['천안SDI','천안 SDI'],['천안전자','천안 삼성전자'],['수원전자','수원 삼성전자']],'site');
 seg($('fin'),IN_B,'bi');seg($('fout'),OUT_B,'bo');
+$('tgl').onclick=()=>{const t=document.querySelector('.top');const o=t.classList.toggle('open');$('tgl').setAttribute('aria-expanded',o);$('tgl').textContent=o?'필터 ▴':'필터 ▾';setTimeout(RL,60)};
+const RL=()=>{try{if(map)map.relayout()}catch(e){}};addEventListener('resize',RL);addEventListener('orientationchange',()=>setTimeout(RL,300));
 $('q').oninput=e=>{S.q=e.target.value.trim();S.sel=null;render()};
 const mins=t=>{const m=t.split(':');return +m[0]*60+ +m[1]};
 function band(b,ts,dir){if(b==='all')return true;return ts.some(t=>{const h=mins(t)/60;
@@ -144,8 +170,9 @@ function pop(x,c,rs,o){
  rs.slice(0,8).forEach(([r,et])=>{h+='<div class="r"><span class="tag '+c+'">'+r.d+'</span> <span class="tag s">'+r.s+'</span> '+esc(r.n)+'<div class="t">'+(c==='in'?'노선 출발 '+esc(r.t.join(', ')||'미기재')+(et?' · 이 정류장 '+et:''):'사업장 출발 '+esc(r.t.join(', ')||'미기재·미운행'))+'</div></div>'});
  if(rs.length>8)h+='<div class="r badge">외 '+(rs.length-8)+'개 노선</div>';
  h+='<div class="r"><a href="'+nav(x[0])+'" target="_blank" rel="noopener">네이버지도</a><a href="'+goo(x[0])+'" target="_blank" rel="noopener">구글지도</a></div></div>';
- const d=document.createElement('div');d.style.cssText='width:250px;margin-bottom:34px';d.innerHTML=h;d.querySelector('.x').onclick=()=>info.setMap(null);
- info=new kakao.maps.CustomOverlay({position:ll(x[1],x[2]),content:d,yAnchor:1,zIndex:10});info.setMap(map)}
+ const d=document.createElement('div');d.style.cssText='width:min(250px,72vw);margin-bottom:38px';d.innerHTML=h;d.querySelector('.x').onclick=()=>info.setMap(null);
+ info=new kakao.maps.CustomOverlay({position:ll(x[1],x[2]),content:d,yAnchor:1,zIndex:10});info.setMap(map);
+ try{if(innerWidth<=760){const p=map.getProjection().containerPointFromCoords(ll(x[1],x[2]));const need=Math.min(300,map.getNode().clientHeight*.85);if(p.y<need)map.panBy(0,p.y-need)}}catch(e){}}
 function render(){
  const rs=DATA.map((r,i)=>[r,i]).filter(([r])=>routeOk(r));
  $('gin').hidden=S.dir==='out';$('gout').hidden=S.dir==='in';
